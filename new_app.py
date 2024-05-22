@@ -24,7 +24,7 @@ def extract_frames(video_path, frame_rate=2):
     cap.release()
     return frames
 
-description_model = pipeline("text2text-generation", model="gpt-3.5-turbo")
+description_model = pipeline("text2text-generation", model="gpt-4o")
 
 def describe_frame(frame):
     image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))

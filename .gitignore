@@ -1,3 +1,5 @@
 # .gitignore
 keys.py
 .venv/
+__pychache__
+.DS_Store

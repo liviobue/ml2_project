@@ -1,6 +1,13 @@
 import openai
 import base64
 import requests
+import cv2
+import numpy as np
+from PIL import Image
+from io import BytesIO
+import tempfile
+import base64
+from transformers import pipeline
 from keys import API_KEY
 
 openai.api_key = API_KEY
@@ -13,9 +20,9 @@ def _openai():
         messages=messages,
         max_tokens=300,
     )
-    return response.choices[0]
+    return response.choices[0].message.content
 
-def request(image_url, promt):
+def imageRequest(imagebase64, promt):
     messages.append(
         {
             "role": "user",
@@ -27,7 +34,7 @@ def request(image_url, promt):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": image_url,
+                        "url": f"data:image/jpeg;base64,{imagebase64}",
                     },
                 },
             ],
@@ -35,31 +42,29 @@ def request(image_url, promt):
     )
     return _openai()
 
-def extract(image_url):
-    image_url = image_url,
-    promt = """
-        Identify a social situation observable in this picture. 
-        Please respond with a description of the social situation, 
-        he people involved, including their activities and what they
-        look like. Format your response as a JSON object. Besides 
-        the general descriptions of the social situation, the 
-        resulting JSON object should contain an attribute named
-        persons containing a list of person object. Make sure 
-        that every person object not only contains information 
-        about their activity, but also everything observable that 
-        can be used to recognise the same person in another picture.
-    """
-    return request(image_url, promt)
+def testRequest(promt):
+    messages.append(
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": promt
+                },
+            ],
+        }
+    )
+    return _openai()
 
-def recognize(image_url, person_description):
-    image_url = image_url,
-    promt = f"""
-        Analyse this picture and decide if you can detect a person that corresponds
-        to the following description: {person_description}. If the person is present, 
-        provide additional details about their activity in this picture.
-    """
-    return request(image_url, promt)
+def describe_frame(frame):
+    image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    buffer = BytesIO()
+    image.save(buffer, format="JPEG")
+    imagebase64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    description = imageRequest(imagebase64, "Describe the persons and their actions in the following image")
+    return description
 
-social_situation = extract("https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg")
-person_tobe_detected = social_situation.persons[0]
-recognition = recognize("https://chunntguet.xyz/pics/eliott-reyna-5KrZ3UoDKC4-unsplash.jpg", person_tobe_detected)
+def summarize_descriptions(descriptions):
+    combined_text = " ".join(descriptions)
+    summary = testRequest("Here is a list of image describtions. let the user think that you are describing a video. Summarize me this text in a continuous text" + combined_text)
+    return summary

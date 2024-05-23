@@ -1,5 +1,5 @@
 import streamlit as st
-from commands import describe_frame, summarize_descriptions, textRequest
+from commands import describe_frame, summarize_descriptions, textRequest, store_chat_in_mongodb
 import cv2
 import tempfile
 import time
@@ -53,6 +53,14 @@ def main():
     # Frame rate input in sidebar
     st.sidebar.title("Settings")
     st.session_state['frame_rate'] = st.sidebar.number_input("Set frame rate (seconds between frame):", min_value=1, max_value=60, value=20)
+    if st.session_state['video_processed']:
+        if st.sidebar.button("Export Chat to MongoDB"):
+            chat_data = {
+                "timestamp": time.time(),
+                "messages": st.session_state['messages']
+            }
+            store_chat_in_mongodb(chat_data)
+            st.sidebar.success("Chat data exported to MongoDB!")
 
     if uploaded_file and st.button("Send Video"):
         with st.spinner('Bot is processing...'):
@@ -65,9 +73,12 @@ def main():
             st.write(f"Extracted {len(frames)} frames.")
 
             descriptions = []
+            previous_description = ""
+
             for frame in frames:
-                description = describe_frame(frame)
+                description = describe_frame(frame, previous_description)
                 descriptions.append(description)
+                previous_description = description
 
             summary = summarize_descriptions(descriptions)
             st.session_state['messages'].append({"role": "bot", "content": summary})

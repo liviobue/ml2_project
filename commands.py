@@ -42,7 +42,7 @@ def imageRequest(imagebase64, promt):
     )
     return _openai()
 
-def testRequest(promt):
+def textRequest(promt):
     messages.append(
         {
             "role": "user",
@@ -66,5 +66,5 @@ def describe_frame(frame):
 
 def summarize_descriptions(descriptions):
     combined_text = " ".join(descriptions)
-    summary = testRequest("Here is a list of image describtions. let the user think that you are describing a video. Summarize me this text in a continuous text" + combined_text)
+    summary = textRequest("Here is a list of image describtions. let the user think that you are describing a video. Summarize me this text in a continuous text" + combined_text)
     return summary

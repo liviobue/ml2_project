@@ -1,5 +1,5 @@
 import streamlit as st
-from commands import describe_frame, summarize_descriptions, testRequest
+from commands import describe_frame, summarize_descriptions, textRequest
 import cv2
 import tempfile
 import time
@@ -39,14 +39,20 @@ def main():
         st.session_state['user_input'] = ""
     if 'uploader_key' not in st.session_state:
         st.session_state['uploader_key'] = 0
+    if 'frame_rate' not in st.session_state:
+        st.session_state['frame_rate'] = 20
 
     # Reset button to clear the session state
     if st.button("Reset Chat"):
         reset_session()
-        st.experimental_rerun()
+        st.rerun()
 
     # Video upload area
     uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"], key=st.session_state['uploader_key'])
+
+    # Frame rate input in sidebar
+    st.sidebar.title("Settings")
+    st.session_state['frame_rate'] = st.sidebar.number_input("Set frame rate (seconds between frame):", min_value=1, max_value=60, value=20)
 
     if uploaded_file and st.button("Send Video"):
         with st.spinner('Bot is processing...'):
@@ -55,7 +61,7 @@ def main():
                 temp_file.write(uploaded_file.read())
                 video_path = temp_file.name
 
-            frames = extract_frames(video_path)
+            frames = extract_frames(video_path, st.session_state['frame_rate'])
             st.write(f"Extracted {len(frames)} frames.")
 
             descriptions = []
@@ -67,7 +73,7 @@ def main():
             st.session_state['messages'].append({"role": "bot", "content": summary})
             st.session_state['video_processed'] = True
             st.session_state['loading'] = False
-            st.experimental_rerun()
+            st.rerun()
 
     # Display chat messages from the session state
     for msg in st.session_state['messages']:
@@ -84,21 +90,20 @@ def main():
             </div>
             """, unsafe_allow_html=True)
 
-    # Show text input field after video summary is displayed
-    if st.session_state['video_processed']:
-        with st.form(key='chat_form', clear_on_submit=True):
-            user_input = st.text_input("You:", value="")
-            submit_button = st.form_submit_button("Send Message")
+    # Show text input field
+    with st.form(key='chat_form', clear_on_submit=True):
+        user_input = st.text_input("You:", value="", key='user_input', disabled=not st.session_state['video_processed'])
+        submit_button = st.form_submit_button("Send Message", disabled=not st.session_state['video_processed'])
 
-        if submit_button:
-            if user_input:
-                with st.spinner('Bot is processing...'):
-                    st.session_state['loading'] = True
-                    response = testRequest(user_input)
-                    st.session_state['messages'].append({"role": "user", "content": user_input})
-                    st.session_state['messages'].append({"role": "bot", "content": response})
-                    st.session_state['loading'] = False
-                    st.experimental_rerun()
+    if submit_button:
+        if user_input:
+            with st.spinner('Bot is processing...'):
+                st.session_state['loading'] = True
+                response = textRequest(user_input)
+                st.session_state['messages'].append({"role": "user", "content": user_input})
+                st.session_state['messages'].append({"role": "bot", "content": response})
+                st.session_state['loading'] = False
+                st.rerun()
 
 if __name__ == "__main__":
     main()

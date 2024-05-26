@@ -73,6 +73,8 @@ def describe_frame(frame, previous_description=""):
     buffer = BytesIO()
     image.save(buffer, format="JPEG")
     imagebase64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    if previous_description == "":
+        previous_description = "There is no Previous frame. This is the first frame of the video."
     prompt = "Describe the persons and their actions in the following image. Previous frame description: " + previous_description
     description = imageRequest(imagebase64, prompt)
     return description
@@ -84,3 +86,36 @@ def summarize_descriptions(descriptions):
 
 def store_chat_in_mongodb(chat_data):
     collection.insert_one(chat_data)
+
+def retrieve_past_interactions(limit=5, accurate_only=True):
+    if limit ==0:
+        return []
+    query = [
+        {
+            '$match': {
+                'accurate': accurate_only
+            }
+        },
+        {
+            '$sort': {
+                'timestamp': -1
+            }
+        },
+        {
+            '$limit': limit
+        }
+    ]
+    past_interactions = collection.aggregate(query)
+
+    results = []
+    for interaction in past_interactions:
+        print("---")
+        messages = interaction["messages"][-4:]  # Get the last 4 messages
+        if len(messages) % 2 != 0:  # Ensure there are pairs of user and bot messages
+            continue  # Skip if there is an odd number of messages
+        pairs = []
+        for i in range(0, len(messages), 2):
+            if messages[i]["role"] == "user" and messages[i + 1]["role"] == "bot":
+                pairs.append({"user": messages[i]["content"], "bot": messages[i + 1]["content"]})
+        results.append(pairs)
+    return results

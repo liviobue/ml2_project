@@ -1,5 +1,5 @@
 import streamlit as st
-from commands import describe_frame, summarize_descriptions, textRequest, store_chat_in_mongodb
+from commands import describe_frame, summarize_descriptions, textRequest, store_chat_in_mongodb, retrieve_past_interactions
 import cv2
 import tempfile
 import time
@@ -41,6 +41,14 @@ def main():
         st.session_state['uploader_key'] = 0
     if 'frame_rate' not in st.session_state:
         st.session_state['frame_rate'] = 20
+    if 'few_shot_limit' not in st.session_state:
+        st.session_state['few_shot_limit'] = 5
+    if 'accurate_only' not in st.session_state:
+        st.session_state['accurate_only'] = True
+    if 'feedback_requested' not in st.session_state:
+        st.session_state['feedback_requested'] = False
+    if 'pending_feedback' not in st.session_state:
+        st.session_state['pending_feedback'] = None
 
     # Reset button to clear the session state
     if st.button("Reset Chat"):
@@ -53,14 +61,53 @@ def main():
     # Frame rate input in sidebar
     st.sidebar.title("Settings")
     st.session_state['frame_rate'] = st.sidebar.number_input("Set frame rate (seconds between frame):", min_value=1, max_value=60, value=20)
+    st.session_state['few_shot_limit'] = st.sidebar.number_input("Set number of few-shot examples:", min_value=0, max_value=20, value=5)
+    st.session_state['accurate_only'] = st.sidebar.radio("Use only accurate chats for few-shot prompting?", ('Yes', 'No')) == 'Yes'
+
+    # Button to check if the few_shot_limit is working
+    if st.sidebar.button("Check Few-Shot Limit"):
+        try:
+            # Retrieve relevant past interactions from MongoDB
+            past_interactions = retrieve_past_interactions(
+                limit=st.session_state['few_shot_limit'],
+                accurate_only=st.session_state['accurate_only']
+            )
+            st.sidebar.success(f"Successfully retrieved {len(past_interactions)} interactions.")
+            # Format the few-shot prompt
+            few_shot_prompt_ = "\n\n".join([
+                "\n\n".join([f"User: {msg['user']}\nBot: {msg['bot']}" for msg in interaction])
+                for interaction in past_interactions
+            ])
+
+            print(few_shot_prompt_)
+        except Exception as e:
+            st.sidebar.warning(f"Error retrieving interactions: {str(e)}")
+
     if st.session_state['video_processed']:
         if st.sidebar.button("Export Chat to MongoDB"):
             chat_data = {
                 "timestamp": time.time(),
-                "messages": st.session_state['messages']
+                "messages": st.session_state['messages'],
+                "accurate": False  # Default to False until user confirms
             }
-            store_chat_in_mongodb(chat_data)
-            st.sidebar.success("Chat data exported to MongoDB!")
+            st.session_state['pending_feedback'] = chat_data
+            st.session_state['feedback_requested'] = True
+    
+    # Feedback mechanism
+    if st.session_state['feedback_requested']:
+        st.sidebar.write("Did the ChatBot provide accurate answers?")
+        if st.sidebar.button("Yes"):
+            st.session_state['pending_feedback']['accurate'] = True
+            store_chat_in_mongodb(st.session_state['pending_feedback'])
+            del st.session_state['pending_feedback']
+            st.session_state['feedback_requested'] = False
+            st.sidebar.success("Chat data exported to MongoDB with accurate flag!")
+        elif st.sidebar.button("No"):
+            store_chat_in_mongodb(st.session_state['pending_feedback'])
+            del st.session_state['pending_feedback']
+            st.session_state['feedback_requested'] = False
+            st.sidebar.warning("Chat data exported to MongoDB without accurate flag.")
+
 
     if uploaded_file and st.button("Send Video"):
         with st.spinner('Bot is processing...'):
@@ -110,7 +157,28 @@ def main():
         if user_input:
             with st.spinner('Bot is processing...'):
                 st.session_state['loading'] = True
-                response = textRequest(user_input)
+
+                try:
+                    # Retrieve relevant past interactions from MongoDB
+                    past_interactions = retrieve_past_interactions(
+                        limit=st.session_state['few_shot_limit'],
+                        accurate_only=st.session_state['accurate_only']
+                    )
+
+                    # Format the few-shot prompt
+                    few_shot_prompt = "\n\n".join([
+                        "\n\n".join([f"User: {msg['user']}\nBot: {msg['bot']}" for msg in interaction])
+                        for interaction in past_interactions
+                    ])
+                except Exception as e:
+                    few_shot_prompt = ""
+                    st.sidebar.warning(f"Error retrieving interactions: {str(e)}. Will send request with without additional Shots")
+                
+                prompt = f"{few_shot_prompt}\n\nUser: {user_input}\nBot:"
+                print(prompt)
+                
+                # Generate response
+                response = textRequest(prompt)
                 st.session_state['messages'].append({"role": "user", "content": user_input})
                 st.session_state['messages'].append({"role": "bot", "content": response})
                 st.session_state['loading'] = False

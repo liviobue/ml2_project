@@ -56,11 +56,12 @@ By combining these features, the project not only provides a practical tool for 
 
 The application includes an evaluation feature to compare AI-generated descriptions with human-written descriptions using cosine similarity of word embeddings.
 
-Human Description Input: Users can input a human-written description of the video.
-AI Description: The AI-generated description is taken from the first content element of the messages array.
+- Human Description Input: Users can input a human-written description of the video.
+- AI Description: The AI-generated description is taken from the first content element of the messages array.
+
 Similarity Calculation: The cosine similarity between the human and AI descriptions is calculated using TF-IDF vectors.
-Visualization: The similarity score is displayed and plotted to show the distribution of similarity.
-Few-Shot Prompting
+
+### Few-Shot Prompting
 Few-shot prompting is used to improve the accuracy and relevance of the AI's responses. By incorporating examples of correct responses from past interactions, the AI learns to generate better responses.
 
 ### Example

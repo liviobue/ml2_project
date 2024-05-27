@@ -4,8 +4,8 @@
 
 1. **Clone the GitHub Repository**:
     ```bash
-    git clone <your-repo-url>
-    cd <your-repo-name>
+    git clone https://github.com/liviobue/ml2_project.git
+    cd ml2_project
     ```
 
 2. **Set Keys and MongoDB Connection**:

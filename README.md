@@ -52,9 +52,32 @@ By combining these features, the project not only provides a practical tool for 
 
 ## Evaluation
 
-TODO
+### Embedding Comparison
 
-- Compare embeddings with correct description
+The application includes an evaluation feature to compare AI-generated descriptions with human-written descriptions using cosine similarity of word embeddings.
+
+Human Description Input: Users can input a human-written description of the video.
+AI Description: The AI-generated description is taken from the first content element of the messages array.
+Similarity Calculation: The cosine similarity between the human and AI descriptions is calculated using TF-IDF vectors.
+Visualization: The similarity score is displayed and plotted to show the distribution of similarity.
+Few-Shot Prompting
+Few-shot prompting is used to improve the accuracy and relevance of the AI's responses. By incorporating examples of correct responses from past interactions, the AI learns to generate better responses.
+
+### Example
+
+Initially, the AI might respond to a user's "thank you" with an image description. After adding few-shot examples where the AI correctly responds to "thank you" with an appropriate reply, the AI learns to handle such inputs correctly.
+
+### How to Use Few-Shot Prompting
+
+Accurate Interactions Storage: Interactions that are flagged as accurate by users are stored in a MongoDB database.
+Few-Shot Limit: Users can set the number of few-shot examples to be used in the sidebar settings.
+Accurate Only: Users can choose to use only accurate interactions for few-shot prompting.
+Check Few-Shot Limit: A button on the sidebar allows users to check if the current few-shot limit is working correctly.
+How to Evaluate
+
+1. Go to the "Evaluation" tab in the Streamlit app.
+2. Enter the human-written description in the provided text area.
+3. Click the "Calculate Similarity" button to see the similarity score and visualization.
 
 ### Example Videos
 

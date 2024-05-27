@@ -62,6 +62,7 @@ The application includes an evaluation feature to compare AI-generated descripti
 Similarity Calculation: The cosine similarity between the human and AI descriptions is calculated using TF-IDF vectors.
 
 ### Few-Shot Prompting
+
 Few-shot prompting is used to improve the accuracy and relevance of the AI's responses. By incorporating examples of correct responses from past interactions, the AI learns to generate better responses.
 
 ### Example

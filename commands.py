@@ -109,7 +109,6 @@ def retrieve_past_interactions(limit=5, accurate_only=True):
 
     results = []
     for interaction in past_interactions:
-        print("---")
         messages = interaction["messages"][-4:]  # Get the last 4 messages
         if len(messages) % 2 != 0:  # Ensure there are pairs of user and bot messages
             continue  # Skip if there is an odd number of messages

@@ -3,6 +3,8 @@ from commands import describe_frame, summarize_descriptions, textRequest, store_
 import cv2
 import tempfile
 import time
+from gtts import gTTS
+import base64
 
 def extract_frames(video_path, frame_rate=20):
     cap = cv2.VideoCapture(video_path)
@@ -23,6 +25,14 @@ def reset_session():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.session_state['uploader_key'] = uploader_key  # Reinitialize uploader_key
+
+def text_to_speech(text):
+    # Convert text to speech
+    tts = gTTS(text=text, lang='en')
+    tts_bytes = tts.save("speech.mp3")
+    with open("speech.mp3", "rb") as f:
+        audio_bytes = f.read()
+    return audio_bytes
 
 # Streamlit app
 def main():
@@ -183,6 +193,21 @@ def main():
                 st.session_state['messages'].append({"role": "bot", "content": response})
                 st.session_state['loading'] = False
                 st.rerun()
+
+    if st.sidebar.button("Listen to Chat Messages"):
+        # Get chat messages
+        chat_messages = st.session_state.get("messages", [])
+        chat_text = ""
+        for msg in chat_messages:
+            if msg["role"] == "bot":
+                chat_text += "Next message form AI Bot.\n"
+            chat_text += msg["content"] + "\n"
+
+        # Convert chat text to speech
+        audio_bytes = text_to_speech(chat_text)
+
+        # Display audio player
+        st.audio(audio_bytes, format="audio/mp3", autoplay=True)
 
 if __name__ == "__main__":
     main()

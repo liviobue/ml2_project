@@ -71,11 +71,12 @@ Initially, the AI might respond to a user's "thank you" with an image descriptio
 
 ### How to Use Few-Shot Prompting
 
-Accurate Interactions Storage: Interactions that are flagged as accurate by users are stored in a MongoDB database.
-Few-Shot Limit: Users can set the number of few-shot examples to be used in the sidebar settings.
-Accurate Only: Users can choose to use only accurate interactions for few-shot prompting.
-Check Few-Shot Limit: A button on the sidebar allows users to check if the current few-shot limit is working correctly.
-How to Evaluate
+- Accurate Interactions Storage: Interactions that are flagged as accurate by users are stored in a MongoDB database.
+- Few-Shot Limit: Users can set the number of few-shot examples to be used in the sidebar settings.
+- Accurate Only: Users can choose to use only accurate interactions for few-shot prompting.
+- Check Few-Shot Limit: A button on the sidebar allows users to check if the current few-shot limit is working correctly.
+
+### How to Evaluate
 
 1. Go to the "Evaluation" tab in the Streamlit app.
 2. Enter the human-written description in the provided text area.

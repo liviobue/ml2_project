@@ -11,6 +11,7 @@ from transformers import pipeline
 from pymongo import MongoClient
 from keys import API_KEY
 from keys import CONNECTION_STRING
+from bson.objectid import ObjectId
 
 openai.api_key = API_KEY
 
@@ -118,3 +119,7 @@ def retrieve_past_interactions(limit=5, accurate_only=True):
                 pairs.append({"user": messages[i]["content"], "bot": messages[i + 1]["content"]})
         results.append(pairs)
     return results
+
+# Restore session from MongoDB
+def restore_session_from_mongodb(session_id):
+    return collection.find_one({"_id": ObjectId(session_id)})

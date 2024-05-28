@@ -1,5 +1,5 @@
 import streamlit as st
-from commands import describe_frame, summarize_descriptions, textRequest, store_chat_in_mongodb, retrieve_past_interactions
+from commands import describe_frame, summarize_descriptions, textRequest, store_chat_in_mongodb, retrieve_past_interactions, restore_session_from_mongodb
 import cv2
 import tempfile
 import time
@@ -29,6 +29,7 @@ def reset_session():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.session_state['uploader_key'] = uploader_key  # Reinitialize uploader_key
+    st.session_state['restore_session_id'] = "" # Reinitialize restore_session_id
 
 # Convert text to speech
 def text_to_speech(text):
@@ -135,7 +136,6 @@ def main():
                 st.session_state['feedback_requested'] = False
                 st.sidebar.warning("Chat data exported to MongoDB without accurate flag.")
 
-
         if uploaded_file and st.button("Send Video"):
             with st.spinner('Bot is processing...'):
                 st.session_state['loading'] = True
@@ -214,17 +214,36 @@ def main():
         if st.sidebar.button("Listen to Chat Messages"):
             # Get chat messages
             chat_messages = st.session_state.get("messages", [])
-            chat_text = ""
-            for msg in chat_messages:
-                if msg["role"] == "bot":
-                    chat_text += "Next message form AI Bot.\n"
-                chat_text += msg["content"] + "\n"
 
-            # Convert chat text to speech
-            audio_bytes = text_to_speech(chat_text)
+            if not chat_messages:
+                st.sidebar.warning("No chat messages available to convert to speech.")
+            else:
+                chat_text = ""
+                for msg in chat_messages:
+                    if msg["role"] == "bot":
+                        chat_text += "Next message from AI Bot.\n"
+                    chat_text += msg["content"] + "\n"
 
-            # Display audio player
-            st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+                # Convert chat text to speech
+                audio_bytes = text_to_speech(chat_text)
+
+                # Display audio player
+                st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+
+        st.sidebar.header("Restore Session")
+        session_id = st.sidebar.text_input("Enter Session ID to Restore", key='restore_session_id')
+        if st.sidebar.button("Restore Session"):
+            try:
+                session_data = restore_session_from_mongodb(session_id)
+                if session_data:
+                    st.session_state['messages'] = session_data['messages']
+                    st.sidebar.success("Session restored successfully!")
+                    st.session_state['video_processed'] = True
+                    st.rerun()
+                else:
+                    st.sidebar.warning("No session found with the provided ID.")
+            except Exception as e:
+                st.sidebar.error(f"An error occurred while restoring the session: {e}")
 
     # Evaluation Tab
     with tab2:

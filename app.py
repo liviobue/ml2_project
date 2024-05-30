@@ -6,8 +6,8 @@ import time
 from gtts import gTTS
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
-import seaborn as sns
+import uuid
+import base64
 
 # Extract frame of video
 def extract_frames(video_path, frame_rate=20):
@@ -34,9 +34,10 @@ def reset_session():
 # Convert text to speech
 def text_to_speech(text):
     tts = gTTS(text=text, lang='en')
-    tts_bytes = tts.save("speech.mp3")
-    with open("speech.mp3", "rb") as f:
-        audio_bytes = f.read()
+    with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+        tts.save(temp_file.name)
+        temp_file.seek(0)
+        audio_bytes = temp_file.read()
     return audio_bytes
 
 # Similarity Calculation Function
@@ -77,6 +78,8 @@ def main():
             st.session_state['feedback_requested'] = False
         if 'pending_feedback' not in st.session_state:
             st.session_state['pending_feedback'] = None
+        if 'speak_aloud' not in st.session_state:
+            st.session_state['speak_aloud'] = False
 
         # Reset button to clear the session state
         if st.button("Reset Chat"):
@@ -91,6 +94,10 @@ def main():
         st.session_state['frame_rate'] = st.sidebar.number_input("Set frame rate (seconds between frame):", min_value=1, max_value=60, value=20)
         st.session_state['few_shot_limit'] = st.sidebar.number_input("Set number of few-shot examples:", min_value=0, max_value=20, value=5)
         st.session_state['accurate_only'] = st.sidebar.radio("Use only accurate chats for few-shot prompting?", ('Yes', 'No')) == 'Yes'
+
+        # Aks user to speak answers aloud
+        speak_aloud_disabled = bool(st.session_state['messages'])
+        st.session_state['speak_aloud'] = st.sidebar.checkbox("Speak messages aloud", value=False, disabled=speak_aloud_disabled)
 
         # Button to check if the few_shot_limit is working
         if st.sidebar.button("Check Few-Shot Limit"):
@@ -174,6 +181,16 @@ def main():
                     <b>Bot:</b> {msg['content']}
                 </div>
                 """, unsafe_allow_html=True)
+                if st.session_state['speak_aloud']:
+                    audio_bytes = text_to_speech(msg['content'])
+                    audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')  # Base64 encode and decode to UTF-8 string
+                    audio_id = str(uuid.uuid4())  # Generate a unique ID for the audio element
+                    st.markdown(f"""
+                    <audio id="{audio_id}" autoplay>
+                        <source src="data:audio/mp3;base64,{audio_base64}">
+                    </audio>
+                    """, unsafe_allow_html=True)
+
 
         # Show text input field
         with st.form(key='chat_form', clear_on_submit=True):
@@ -211,7 +228,7 @@ def main():
                     st.session_state['loading'] = False
                     st.rerun()
 
-        if st.sidebar.button("Listen to Chat Messages"):
+        if st.sidebar.button("Listen to all Chat Messages"):
             # Get chat messages
             chat_messages = st.session_state.get("messages", [])
 
@@ -221,7 +238,9 @@ def main():
                 chat_text = ""
                 for msg in chat_messages:
                     if msg["role"] == "bot":
-                        chat_text += "Next message from AI Bot.\n"
+                        chat_text += "Next message is from the AI Bot."
+                    if msg["role"] == "user":
+                        chat_text += "Next message is from the user."
                     chat_text += msg["content"] + "\n"
 
                 # Convert chat text to speech

@@ -48,6 +48,11 @@ This project aims to bridge this gap by developing an interactive chatbot that s
     - Users can set parameters such as frame rate for processing videos.
     - Option to use accurate summaries from the database for improved responses.
 
+5. **Accessability for Blind Users**:
+    - Added Help lables to button and input fields
+    - Use aria-label attributes or similar alternatives to ensure each interactive element is properly described.
+    
+
 By combining these features, the project not only provides a practical tool for the visually impaired but also creates an inclusive platform that encourages user interaction and feedback. This ensures that the system evolves to better meet the needs of its users, making video content more accessible and enjoyable for everyone.
 
 ## Evaluation
@@ -68,6 +73,8 @@ Few-shot prompting is used to improve the accuracy and relevance of the AI's res
 ### Example
 
 Initially, the AI might respond to a user's "thank you" with an image description. After adding few-shot examples where the AI correctly responds to "thank you" with an appropriate reply, the AI learns to handle such inputs correctly.
+
+However, new problems arose with the few/zero-shot examples. The AI began incorporating scenes from other videos. Therefore, it should only include examples from the same video.
 
 ### How to Use Few-Shot Prompting
 

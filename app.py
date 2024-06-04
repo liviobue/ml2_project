@@ -51,6 +51,8 @@ def calculate_similarity(human_desc, ai_desc):
 # Streamlit app
 def main():
     st.title("Video Description Chatbot")
+    # Additional ARIA live region for accessibility
+    st.markdown('<div aria-live="assertive" style="position: absolute; left: -9999px;">Screen reader live updates here</div>', unsafe_allow_html=True)
 
     # Tabs
     tab1, tab2 = st.tabs(["Chat", "Evaluation"])
@@ -83,12 +85,12 @@ def main():
             st.session_state['speak_aloud'] = False
 
         # Reset button to clear the session state
-        if st.button("Reset Chat"):
+        if st.button("Reset Chat", help="Reset the chat session"):
             reset_session()
             st.rerun()
 
         # Video upload area
-        uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"], key=st.session_state['uploader_key'])
+        uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"], key=st.session_state['uploader_key'], help="Upload a video file to process")
 
         # Initial Audio
         if 'initial_audio_played' not in st.session_state:
@@ -97,16 +99,16 @@ def main():
 
         # Frame rate input in sidebar
         st.sidebar.title("Settings")
-        st.session_state['frame_rate'] = st.sidebar.number_input("Set frame rate (seconds between frame):", min_value=1, max_value=60, value=20)
-        st.session_state['few_shot_limit'] = st.sidebar.number_input("Set number of few-shot examples:", min_value=0, max_value=20, value=5)
-        st.session_state['accurate_only'] = st.sidebar.radio("Use only accurate chats for few-shot prompting?", ('Yes', 'No')) == 'Yes'
+        st.session_state['frame_rate'] = st.sidebar.number_input("Set frame rate (seconds between frame):", min_value=1, max_value=60, value=20, help="Set the interval in seconds between frames extracted from the video")
+        st.session_state['few_shot_limit'] = st.sidebar.number_input("Set number of few-shot examples:", min_value=0, max_value=20, value=5, help="Set the number of few-shot examples to use for generating responses")
+        st.session_state['accurate_only'] = st.sidebar.radio("Use only accurate chats for few-shot prompting?", ('Yes', 'No'), help="Use only accurate past chats for few-shot prompting") == 'Yes'
 
-        # Aks user to speak answers aloud
+        # Ask user to speak answers aloud
         speak_aloud_disabled = bool(st.session_state['messages'])
-        st.session_state['speak_aloud'] = st.sidebar.checkbox("Speak messages aloud", value=False, disabled=speak_aloud_disabled)
+        st.session_state['speak_aloud'] = st.sidebar.checkbox("Speak messages aloud", value=False, disabled=speak_aloud_disabled, help="Enable or disable speaking messages aloud")
 
         # Button to check if the few_shot_limit is working
-        if st.sidebar.button("Check Few-Shot Limit"):
+        if st.sidebar.button("Check Few-Shot Limit", help="Check the current few-shot limit"):
             try:
                 # Retrieve relevant past interactions from MongoDB
                 past_interactions = retrieve_past_interactions(
@@ -125,7 +127,7 @@ def main():
                 st.sidebar.warning(f"Error retrieving interactions: {str(e)}")
 
         if st.session_state['video_processed']:
-            if st.sidebar.button("Export Chat to MongoDB"):
+            if st.sidebar.button("Export Chat to MongoDB", help="Export the chat data to MongoDB"):
                 chat_data = {
                     "timestamp": time.time(),
                     "messages": st.session_state['messages'],
@@ -137,19 +139,19 @@ def main():
         # Feedback mechanism
         if st.session_state['feedback_requested']:
             st.sidebar.write("Did the ChatBot provide accurate answers?")
-            if st.sidebar.button("Yes"):
+            if st.sidebar.button("Yes", help="Confirm that the chatbot provided accurate answers"):
                 st.session_state['pending_feedback']['accurate'] = True
                 store_chat_in_mongodb(st.session_state['pending_feedback'])
                 del st.session_state['pending_feedback']
                 st.session_state['feedback_requested'] = False
                 st.sidebar.success("Chat data exported to MongoDB with accurate flag!")
-            elif st.sidebar.button("No"):
+            elif st.sidebar.button("No", help="Confirm that the chatbot did not provide accurate answers"):
                 store_chat_in_mongodb(st.session_state['pending_feedback'])
                 del st.session_state['pending_feedback']
                 st.session_state['feedback_requested'] = False
                 st.sidebar.warning("Chat data exported to MongoDB without accurate flag.")
 
-        if uploaded_file and st.button("Send Video"):
+        if uploaded_file and st.button("Send Video", help="Send the uploaded video for processing"):
             with st.spinner('Bot is processing...'):
                 st.session_state['loading'] = True
                 with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -177,13 +179,13 @@ def main():
         for msg in st.session_state['messages']:
             if msg['role'] == 'user':
                 st.markdown(f"""
-                <div style="background-color: #DCF8C6; padding: 10px; border-radius: 10px; margin: 5px 0; color: black;">
+                <div role="alert" aria-label="User message" style="background-color: #DCF8C6; padding: 10px; border-radius: 10px; margin: 5px 0; color: black;">
                     <b>You:</b> {msg['content']}
                 </div>
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
-                <div style="background-color: #E1F5FE; padding: 10px; border-radius: 10px; margin: 5px 0; color: black;">
+                <div role="alert" aria-label="Bot message" style="background-color: #E1F5FE; padding: 10px; border-radius: 10px; margin: 5px 0; color: black;">
                     <b>Bot:</b> {msg['content']}
                 </div>
                 """, unsafe_allow_html=True)
@@ -200,8 +202,8 @@ def main():
 
         # Show text input field
         with st.form(key='chat_form', clear_on_submit=True):
-            user_input = st.text_input("You:", value="", key='user_input', disabled=not st.session_state['video_processed'])
-            submit_button = st.form_submit_button("Send Message", disabled=not st.session_state['video_processed'])
+            user_input = st.text_input("You:", value="", key='user_input', disabled=not st.session_state['video_processed'], help="Enter your message here", placeholder="Type your message here")
+            submit_button = st.form_submit_button("Send Message", disabled=not st.session_state['video_processed'], help="Send your message to the chatbot")
 
         if submit_button:
             if user_input:
@@ -234,7 +236,7 @@ def main():
                     st.session_state['loading'] = False
                     st.rerun()
 
-        if st.sidebar.button("Listen to all Chat Messages"):
+        if st.sidebar.button("Listen to all Chat Messages", help="Convert all chat messages to speech and play them"):
             # Get chat messages
             chat_messages = st.session_state.get("messages", [])
 
@@ -256,8 +258,8 @@ def main():
                 st.audio(audio_bytes, format="audio/mp3", autoplay=True)
 
         st.sidebar.header("Restore Session")
-        session_id = st.sidebar.text_input("Enter Session ID to Restore", key='restore_session_id')
-        if st.sidebar.button("Restore Session"):
+        session_id = st.sidebar.text_input("Enter Session ID to Restore", key='restore_session_id', help="Enter the session ID to restore a previous chat session")
+        if st.sidebar.button("Restore Session", help="Restore a previous chat session using the session ID"):
             try:
                 session_data = restore_session_from_mongodb(session_id)
                 if session_data:
@@ -275,13 +277,13 @@ def main():
         st.header("Evaluation")
 
         # Input fields for human description
-        human_description = st.text_area("Enter human-written description of the video")
+        human_description = st.text_area("Enter human-written description of the video", help="Enter a human-written description of the video for evaluation purposes")
 
-        if st.button("Calculate Similarity"):
+        if st.button("Calculate Similarity", help="Calculate the similarity between human and AI-generated descriptions"):
             try:
                 if human_description and st.session_state['messages']:
                     ai_description = st.session_state['messages'][0]["content"]
-                    
+
                     # Calculate Similarity
                     similarity = calculate_similarity(human_description, ai_description)
 

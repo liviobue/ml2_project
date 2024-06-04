@@ -30,6 +30,7 @@ def reset_session():
         del st.session_state[key]
     st.session_state['uploader_key'] = uploader_key  # Reinitialize uploader_key
     st.session_state['restore_session_id'] = "" # Reinitialize restore_session_id
+    st.session_state['initial_audio_played'] = True
 
 # Convert text to speech
 def text_to_speech(text):
@@ -88,6 +89,11 @@ def main():
 
         # Video upload area
         uploaded_file = st.file_uploader("Upload a video file", type=["mp4", "avi", "mov"], key=st.session_state['uploader_key'])
+
+        # Initial Audio
+        if 'initial_audio_played' not in st.session_state:
+            st.sidebar.audio("speech.mp3", format="audio/mp3", autoplay=True)
+            st.session_state['initial_audio_played'] = True
 
         # Frame rate input in sidebar
         st.sidebar.title("Settings")

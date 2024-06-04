@@ -1,13 +1,9 @@
 import openai
 import base64
-import requests
 import cv2
-import numpy as np
 from PIL import Image
 from io import BytesIO
-import tempfile
 import base64
-from transformers import pipeline
 from pymongo import MongoClient
 from keys import API_KEY
 from keys import CONNECTION_STRING

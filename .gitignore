@@ -3,4 +3,3 @@ keys.py
 .venv/
 __pycache__/
 .DS_Store
-speech.mp3

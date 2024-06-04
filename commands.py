@@ -19,7 +19,7 @@ collection = db["chats"]
 messages = [
     {
         "role": "system",
-        "content": "You are an AI that helps to describe videos for blind people by summarizing a sequence of images into a coherent narrative."
+        "content": "You are an AI designed to help describe videos for blind people by summarizing sequences of images into coherent narratives. I will provide you with some Zero/Few-Shot examples for reference, but your summaries should strictly adhere to the content of the initial video being described. Do not incorporate specific details or content from the examples provided, only use them to understand the format and style of the responses."
     }
 ]
 

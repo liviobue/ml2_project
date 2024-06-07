@@ -16,12 +16,18 @@ Local start was only tested on MAC (m1). I would propose to use docker if you ar
     - Rename `keys-template.py` to `keys.py`.
     - Add your API keys and MongoDB connection details to `keys.py`.
 
-3. **Install requirements.txt**
+4. **Create Python env**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    ```
+
+4. **Install requirements.txt**
     ```bash
     pip install -r requirements.txt
     ```
 
-4. **Run the Streamlit Application**:
+5. **Run the Streamlit Application**:
     ```bash
     streamlit run app.py
     ```

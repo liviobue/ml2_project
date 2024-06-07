@@ -8,13 +8,32 @@
     cd ml2_project
     ```
 
+### Start locally
+
 2. **Set Keys and MongoDB Connection**:
     - Rename `keys-template.py` to `keys.py`.
     - Add your API keys and MongoDB connection details to `keys.py`.
 
-3. **Run the Streamlit Application**:
+3. **Install requirements.txt**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Run the Streamlit Application**:
     ```bash
     streamlit run app.py
+    ```
+
+### Docker
+
+2. **Build the docker container**:
+    ```bash
+    docker build --build-arg API_KEY=your_api_key_value --build-arg CONNECTION_STRING=your_connection_string_value -t your_image_name:tag .
+    ```
+
+3. **Run dockre container**:
+    ```bash
+    docker run -p 8501:8501 your_image_name:tag
     ```
 
 ## Motivation
@@ -92,7 +111,3 @@ However, new problems arose with the few/zero-shot examples. The AI began incorp
 ### Example Videos
 
 https://www.pexels.com/search/videos/
-
-## Contributing
-
-We welcome contributions to improve this project. Please feel free to fork the repository and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.

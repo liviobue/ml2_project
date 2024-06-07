@@ -5,9 +5,22 @@ from PIL import Image
 from io import BytesIO
 import base64
 from pymongo import MongoClient
-from keys import API_KEY
-from keys import CONNECTION_STRING
 from bson.objectid import ObjectId
+import os
+
+# Attempt to get the API_KEY and CONNECTION_STRING from environment variables
+API_KEY = os.getenv('API_KEY')
+CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+
+# Fallback to importing from keys.py if environment variables are not set
+if not API_KEY or not CONNECTION_STRING:
+    try:
+        from keys import API_KEY as FILE_API_KEY
+        from keys import CONNECTION_STRING as FILE_CONNECTION_STRING
+        API_KEY = API_KEY or FILE_API_KEY
+        CONNECTION_STRING = CONNECTION_STRING or FILE_CONNECTION_STRING
+    except ImportError:
+        raise RuntimeError("API_KEY and CONNECTION_STRING must be set either as environment variables or in the keys.py file")
 
 openai.api_key = API_KEY
 

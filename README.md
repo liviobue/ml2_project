@@ -10,6 +10,8 @@
 
 ### Start locally
 
+Local start was only tested on MAC (m1). I would propose to use docker if you are running this project on a windows computer.
+
 2. **Set Keys and MongoDB Connection**:
     - Rename `keys-template.py` to `keys.py`.
     - Add your API keys and MongoDB connection details to `keys.py`.

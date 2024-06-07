@@ -36,7 +36,7 @@ Local start was only tested on MAC (m1). I would propose to use docker if you ar
 
 2. **Build the docker container**:
     ```bash
-    docker build --build-arg API_KEY=your_api_key_value --build-arg CONNECTION_STRING=your_connection_string_value -t your_image_name:tag .
+    docker build --build-arg API_KEY="your_api_key_value" --build-arg CONNECTION_STRING="your_connection_string_value" -t your_image_name:tag .
     ```
 
 3. **Run dockre container**:

@@ -101,7 +101,7 @@ Few-shot prompting is used to improve the accuracy and relevance of the AI's res
 
 Initially, the AI might respond to a user's "thank you" with an image description. After adding few-shot examples where the AI correctly responds to "thank you" with an appropriate reply, the AI learns to handle such inputs correctly.
 
-However, new problems arose with the few/zero-shot examples. The AI began incorporating scenes from other videos. Therefore, the project owner tried to keep the chatbot under control with some prompt engineering techniques. 
+However, new problems arose with the few/zero-shot examples. The AI began incorporating scenes from other videos. Therefore, the project owner tried to keep the chatbot under control with some prompt engineering techniques. Otherwise, it is sufficient to use the "few-shot" setting only when the last MongoDB chat histories are from the same video. 
 
 ### How to Use Few-Shot Prompting
 

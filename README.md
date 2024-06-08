@@ -7,14 +7,26 @@
     git clone https://github.com/liviobue/ml2_project.git
     cd ml2_project
     ```
+2. **Get credentials**
+    - Please feel free to reach out to get the credentials: buergli1@students.zhaw.ch
 
-Please feel free to reach out to get the credentials: buergli1@students.zhaw.ch
+### Docker
+
+3. **Build the docker container**:
+    ```bash
+    docker build --build-arg API_KEY="your_api_key_value" --build-arg CONNECTION_STRING="your_connection_string_value" -t your_image_name:tag .
+    ```
+
+4. **Run dockre container**:
+    ```bash
+    docker run -p 8501:8501 your_image_name:tag
+    ```
 
 ### Start locally
 
 Local start was only tested on MAC (m1). I would propose to use docker if you are running this project on a windows computer.
 
-2. **Set Keys and MongoDB Connection**:
+3. **Set Keys and MongoDB Connection**:
     - Rename `keys-template.py` to `keys.py`.
     - Add your API keys and MongoDB connection details to `keys.py`.
 
@@ -24,26 +36,14 @@ Local start was only tested on MAC (m1). I would propose to use docker if you ar
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
 
-4. **Install requirements.txt**
+5. **Install requirements.txt**
     ```bash
     pip install -r requirements.txt
     ```
 
-5. **Run the Streamlit Application**:
+6. **Run the Streamlit Application**:
     ```bash
     streamlit run app.py
-    ```
-
-### Docker
-
-2. **Build the docker container**:
-    ```bash
-    docker build --build-arg API_KEY="your_api_key_value" --build-arg CONNECTION_STRING="your_connection_string_value" -t your_image_name:tag .
-    ```
-
-3. **Run dockre container**:
-    ```bash
-    docker run -p 8501:8501 your_image_name:tag
     ```
 
 ## Motivation

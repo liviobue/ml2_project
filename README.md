@@ -8,6 +8,8 @@
     cd ml2_project
     ```
 
+Please feel free to reach out to get the credentials: buergli1@students.zhaw.ch
+
 ### Start locally
 
 Local start was only tested on MAC (m1). I would propose to use docker if you are running this project on a windows computer.

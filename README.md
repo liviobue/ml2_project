@@ -8,6 +8,7 @@
     cd ml2_project
     ```
 2. **Get credentials**
+
     - Please feel free to reach out to get the credentials: buergli1@students.zhaw.ch
 
 ### Docker
